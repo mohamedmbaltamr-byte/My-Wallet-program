@@ -1,5 +1,3 @@
-#()
-
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * My Wallet program * * * * * * * * * * * * * * * * * * * * * * * * * * * * # 
 from operator import itemgetter
 def get_number_only():
