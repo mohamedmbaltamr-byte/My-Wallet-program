@@ -4,81 +4,81 @@ def get_number_only():
     while True:
         user_input = input("Enter a number : \n")
         try: return float(user_input)
-        except ValueError: print("Error: Numbers only allowed (No letters or symbols).")
+        except ValueError: print("Input Error, Press Enter To re-enter")
 ##################################################################################----------------------------------------
+def cop(cop_1):
+    print("Choose one of the options:\n")
+    for i in range(len(cop_1)):
+        print(i, "- ", cop_1[i]," press (",i,")\n")
+    while True:
+        option_cop = get_number_only()
 
+        if 0 <= option_cop <= len(cop_1):
+            return int(option_cop)
+
+        else:
+            print("Input Error, Press Enter To re-enter.")
+##################################################################################----------------------------------------
 print("\n\n * * * * * * * * * * Welcome to My Wallet program * * * * * * * * * * \n\n")
-input("To start the program, press Enter")
-eroor01 = "Input Error, Press Enter To re-enter\n"
-list_expenses = [] # قائمة المصاريف
-list_added = [] # قائمة الاضافات
-total_prices = 0
-amount_of_money = 0
-
+list_expenses = [] ; list_added = [] # قائمة المصاريف وقائمة الاضافات
+total_prices = 0 ; amount_of_money = 0
+currency = input("Enter the currency you want to use in the program (e.g. USD, EUR, LYD....Etc.):\n").upper()
 ##################################################################################----------------------------------------
 while True :###----------------------------------------------------------------###
+    option = cop(["Financial Report :", "Add Expense :", "Add Income :", "Exit the program :"])
 
-    option = input("""Choose One Of These Options\n
- 1- Financial Report \n \t Enter (a)\n
- 2- Add Expense \n \t Enter (b)\n
- 3- Add Income \n \t Enter (c)\n
- 4- Exit the program \n \t Enter (d)\n""").lower()  
 
-    if option == "a" : ###-----------------------------------------------------###
+
+
+    if option == 0 : ###-----------------------------------------------------###
+
         list_expenses_big_to_small = sorted(list_expenses, key = itemgetter(1), reverse = True)
         list_added_big_to_small = sorted(list_added, key = itemgetter(1), reverse = True)
         allmony = amount_of_money
 
-
         print("Your expenses is:-\n")
         for cd, vd in enumerate(list_expenses_big_to_small , 1):
             print("\t",cd, "- ", vd)
-        print("\t -----The Total is:   %d LYD-----"%total_prices)
-
+        print("\t -----The Total is:   %d %s-----"%(total_prices, currency))
 
         print("\n\n\nYour added is:-\n" )
         for ce, ve in enumerate(list_added_big_to_small , 1):
             print("\t",ce, "- ", ve)
-        print("\t -----The Total is:   %d LYD-----"%amount_of_money)
+        print("\t -----The Total is:   %d %s-----"%(amount_of_money, currency))
         save_mony = amount_of_money - total_prices
-        print("\n\n\n",(" The savings you have now are: %d LYD "%save_mony).center(80,"*"),"\n\n")
+        print("\n\n\n",(" The savings you have now are: %d %s "%(save_mony, currency)).center(80,"*"),"\n\n")
         input("Press ENTER if you need exit in this page \n\n")
 
 
 
-    elif option == "b" : ###---------------------------------------------------###
 
-
+    elif option == 1 : ###---------------------------------------------------###
 
         while True :
-            option_a = input("If you want to enter an item, Enter         (a)\nIf you want to exit this page, Enter        (b)\n").lower()
-            if option_a == "a" :
+            option_a = cop(["Enter an item", "Exit this page"])
+            if option_a == 0 :
                 item = input("Enter the expense item :\n").title()
                 print("How much was the",item,"?")
                 item_Price = get_number_only()
                 total_prices = item_Price + total_prices
 
                 s01 = "%s:"%item
-                a = (s01.ljust(20), item_Price, "LYD")
+                a = (s01.ljust(20), item_Price, currency)
                 list_expenses.append(a)
 
                 print("Added Successfully\n")
 
-            elif option_a == "b" :
+            else :# option_b = 1
                 break
 
-            else :
-                input(eroor01)
 
 
 
-    elif option == "c": ###-----------------------------------------------------###
-
-
+    elif option == 2 : ###-----------------------------------------------------###
 
         while True :    
-            option_b = input("If you want Enter the added value, Enter    (a)\nIf you want to exit this page, Enter        (b)\n").lower()
-            if option_b == "a" :
+            option_b = cop(["Enter an addition", "Exit this page"])
+            if option_b == 0 :
                 Addition = input("Enter the add item :\n").title()
                 print("What is the value of the addition?\n")
                 Added_value = get_number_only()
@@ -88,18 +88,13 @@ while True :###----------------------------------------------------------------#
                 list_added.append(ab)
                 print("Added successfully\n")
 
-            elif option_b == "b" :
+            else :  # option_b = 1
                 break
-                
-            else :
-                input(eroor01)
 
 
 
-    elif option == "d" : ###----------------------------------------------------###   
+
+    else: # option = 3
         print(" * * * * * * * * * * The program has ended * * * * * * * * * * \n\n")
         exit()
-
-    else :###-------------------------------------------------------------------###
-        input(eroor01)        
 ##################################################################################----------------------------------------
