@@ -1,70 +1,133 @@
-# * * * * * * * * * * * * * * * * * * * * * * * * * * * * My Wallet program * * * * * * * * * * * * * * * * * * * * * * * * * * * * # 
+import json
+import os
 from operator import itemgetter
-from my_class import get_number_only, cop, get_add
 
-print("\n\n * * * * * * * * * * Welcome to My Wallet program * * * * * * * * * * \n\n")
+# --- UTILITY FUNCTIONS (The 'my_class' logic) ---
 
-list_expenses = [] # قائمة المصاريف
-list_added = [] # قائمة المبالغ المضافة
-total_prices = 0 # مجموع المصاريف
-amount_of_money = 0 # مجموع المبالغ المضافة
+def get_number_only(prompt="Enter a number: "):
+    """Ensures user input is a valid float."""
+    while True:
+        user_input = input(prompt)
+        try:
+            return float(user_input)
+        except ValueError:
+            print("❌ Invalid input! Please enter a numerical value.")
 
-currency = "LYD" if cop(["TO Libyan Dinar 'LYD'", "TO US Dollar 'USD'"]) == 0 else "USD"
+def choose_option(options_list):
+    """Displays a menu and returns the selected index."""
+    print("\n--- Choose one of the options ---")
+    for i, option in enumerate(options_list):
+        print(f"[{i}] - {option}")
+    
+    while True:
+        choice = get_number_only("\nSelect option number: ")
+        if 0 <= choice < len(options_list):
+            return int(choice)
+        print(f"⚠️ Please choose a number between 0 and {len(options_list)-1}")
 
-##################################################################################----------------------------------------
-while True :###----------------------------------------------------------------###
-    option = cop(["Financial Report :", "Add Expense :", "Add Income :", "Exit the program :"])
+def get_entry_details(item_prompt, price_prompt, currency="LYD"):
+    """Handles the input for a new expense or income entry."""
+    item_name = input(item_prompt).strip().title()
+    item_price = get_number_only(price_prompt)
+    # Formatting entry: (Name, Price, Currency)
+    entry_tuple = (f"{item_name}:".ljust(20), item_price, currency)
+    return item_name, item_price, entry_tuple
 
-    if option == 0 : ###-----------------------------------------------------###
+# --- MAIN PROGRAM ---
 
+FILE_NAME = "wallet_data.json"
 
-        print("Your expenses is:-\n")
-        for price, currency_1 in enumerate(sorted(list_expenses, key = itemgetter(1), reverse = True) , 1):
-            print("\t",price, "- ", currency_1)
-        print("\t -----The Total is:   %.2f %s-----"%(total_prices, currency))
+def main():
+    print("\n" + "*"*40)
+    print("Welcome to Your Smart Wallet".center(40))
+    print("*"*40)
 
-        print("\n\n\nYour added is:-\n" )
-        for price, currency_1 in enumerate(sorted(list_added, key = itemgetter(1), reverse = True) , 1):
-            print("\t",price, "- ", currency_1)
-        print("\t -----The Total is:   %.2f %s-----"%(amount_of_money, currency))
-        
-        print("\n\n\n",(" The savings you have now are: %.2f %s "%((amount_of_money - total_prices), (currency))).center(80,"*"),"\n\n")
-        input("Press ENTER if you need exit in this page \n\n")
+    # Initializing data structures
+    try:
+        with open(FILE_NAME, "r") as f:
+            data = json.load(f)
+            list_expenses = data.get("list_expenses", [])
+            list_added = data.get("list_added", [])
+            total_prices = data.get("total_prices", 0)
+            amount_of_money = data.get("amount_of_money", 0)
+    except (FileNotFoundError, json.JSONDecodeError):
+        print("\n📝 No previous data found. Creating a new wallet...")
+        list_expenses, list_added = [], []
+        total_prices, amount_of_money = 0, 0
 
+    # Currency setup
+    curr_choice = choose_option(["Libyan Dinar (LYD)", "US Dollar (USD)"])
+    currency = "LYD" if curr_choice == 0 else "USD"
 
-    elif option == 1 : ###---------------------------------------------------###
+    while True:
+        menu_items = [
+            "Financial Report", "Add Expense", "Add Income", 
+            "Save Data", "Reset/Delete Data", "Exit"
+        ]
+        option = choose_option(menu_items)
 
+        if option == 0:  # FINANCIAL REPORT
+            print("\n" + "="*30)
+            print("📊 FINANCIAL REPORT")
+            
+            print("\n🔻 EXPENSES:")
+            # Sorting by price (index 1 of the tuple)
+            for idx, entry in enumerate(sorted(list_expenses, key=itemgetter(1), reverse=True), 1):
+                print(f"  {idx}. {entry[0]} {entry[1]:.2f} {entry[2]}")
+            print(f"  {'Total:'.ljust(20)} {total_prices:.2f} {currency}")
 
-        while True :
-            option_a = cop(["Enter an item", "Exit this page"])
-            if option_a == 0 :
+            print("\n🔺 INCOME/ADDED:")
+            for idx, entry in enumerate(sorted(list_added, key=itemgetter(1), reverse=True), 1):
+                print(f"  {idx}. {entry[0]} {entry[1]:.2f} {entry[2]}")
+            print(f"  {'Total:'.ljust(20)} {amount_of_money:.2f} {currency}")
+            
+            savings = amount_of_money - total_prices
+            print("\n" + f" CURRENT SAVINGS: {savings:.2f} {currency} ".center(50, "*"))
+            input("\nPress ENTER to return to menu...")
 
-                item, item_price, the_add = get_add(("Enter the expense item :\n"), ("How much was these ?"), currency)
-                total_prices = item_price + total_prices
-                list_expenses.append(the_add)
-                print("Added Successfully\n")
+        elif option == 1:  # ADD EXPENSE
+            while True:
+                sub_opt = choose_option(["Add New Expense", "Back to Main Menu"])
+                if sub_opt == 0:
+                    _, price, entry = get_entry_details("Expense Name: ", "Amount: ", currency)
+                    total_prices += price
+                    list_expenses.append(entry)
+                    print("✅ Expense added.")
+                else: break
 
-            else :# option_b = 1
-                break
+        elif option == 2:  # ADD INCOME
+            while True:
+                sub_opt = choose_option(["Add New Income", "Back to Main Menu"])
+                if sub_opt == 0:
+                    _, price, entry = get_entry_details("Source Name: ", "Amount: ", currency)
+                    amount_of_money += price
+                    list_added.append(entry)
+                    print("✅ Income added.")
+                else: break
 
+        elif option == 3:  # SAVE DATA
+            data = {
+                "list_expenses": list_expenses,
+                "list_added": list_added,
+                "total_prices": total_prices,
+                "amount_of_money": amount_of_money
+            }
+            with open(FILE_NAME, "w") as f:
+                json.dump(data, f, indent=4) # indent=4 makes the JSON file readable
+            print("💾 Data saved successfully!")
 
-    elif option == 2 : ###-----------------------------------------------------###
+        elif option == 4:  # DELETE DATA
+            confirm = input("⚠️ Are you sure you want to delete all data? (yes/no): ")
+            if confirm.lower() == 'yes':
+                if os.path.exists(FILE_NAME):
+                    os.remove(FILE_NAME)
+                    list_expenses, list_added = [], []
+                    total_prices, amount_of_money = 0, 0
+                    print("🗑️ Data wiped successfully.")
+            
+        elif option == 5:  # EXIT
+            print("👋 Goodbye! Don't forget to save your progress.")
+            break
 
-
-        while True :    
-            option_b = cop(["Enter an addition", "Exit this page"])
-            if option_b == 0 :
-
-                item, item_price, the_add = get_add(("Enter the add item :\n"), ("What is the value of the addition?\n"), currency)
-                amount_of_money = amount_of_money + item_price
-                list_added.append(the_add)
-                print("Added successfully\n")
-
-            else :  # option_b = 1
-                break
-
-
-    else: # option = 3
-        print(" * * * * * * * * * * The program has ended * * * * * * * * * * \n\n")
-        exit()
-##################################################################################----------------------------------------
+if __name__ == "__main__":
+    main()
